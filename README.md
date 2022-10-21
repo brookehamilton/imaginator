@@ -6,10 +6,10 @@ brookehamilton@gmail.com
 This project uses [Stable Diffusion](https://github.com/huggingface/diffusers/tree/main#new--stable-diffusion-is-now-fully-compatible-with-diffusers:~:text=VRAM.%20See%20the-,model%20card,-for%20more%20information) via the [Huggingface diffusers library](https://github.com/huggingface/diffusers/tree/main#new--stable-diffusion-is-now-fully-compatible-with-diffusers) to generate artwork based on kids' drawings.
 
 Original:  
-![original drawing](https://github.com/brookehamilton/stable-diffusion/blob/main/images/readme_images/original_monster.png?raw=true)
+![original drawing](https://github.com/brookehamilton/stable-diffusion/blob/main/images/readme_images/red_monster.png?raw=true)
 
 Output:  
-![output drawing](https://github.com/brookehamilton/stable-diffusion/blob/main/images/readme_images/output_monster.png?raw=true)
+![output drawing](https://github.com/brookehamilton/stable-diffusion/blob/main/images/readme_images/red_monster_output.png?raw=true)
 
 
 ## Getting Started
@@ -44,6 +44,6 @@ pip install -r requirements.txt
 ## Creating images
 To run at the command line:
 ```
-python3 run.py --init_image_path='images/sample_images/red_monster.png' --prompt='Red monster, trending on artstation'
+python3 run.py --init_image_path='images/sample_images/red_monster.png' --prompt='photo of red hairy monster with three eyes, award winning photography, national geographic, nikon'
 ```
 
