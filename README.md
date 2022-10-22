@@ -18,11 +18,16 @@ Output:
 - If you don't have one yet, sign up for an account with Huggingface (including an [access token](https://huggingface.co/docs/hub/security-tokens))
 - Go to the model card for Stable Diffusion and [accept the Stable Diffusion license](https://huggingface.co/CompVis/stable-diffusion-v1-4)
 
-## Running on GPU vs. CPU
-If you don't have access to a GPU, this can be run (slowly) on a CPU. On my Mac, it takes about 8 minutes to generate an image.  Another option is to use Google Colab (see below).
+### Access token
+If desired, you can define your Huggingface access token as the environment variable `HUGGINGFACE_ACCESS_TOKEN`, such as in your `.zshrc` as:
+`export HUGGINGFACE_ACCESS_TOKEN={your token here}`
+If this variable is not found, the code will prompt the user for the token each time.
+
+### Running on GPU vs. CPU
+If you don't have access to a GPU, this can be run (slowly) on a CPU. On my Mac, it takes about 4 minutes to generate an image around 700x500.  Another option is to use Google Colab (see below).
 
 ### Running in Google Colab
-If you don't have access to a GPU environment, Google Colab is a great alternative. I have included a Google Colab notebook [here](https://colab.research.google.com/drive/1HWg40vl8Td4oNliS3XW6ouLeJMzUrjo0#scrollTo=MWFi2PNQkL6u).
+If you don't have access to a GPU environment, Google Colab is a great alternative. I have included a Google Colab notebook [here](https://colab.research.google.com/drive/18Iza0DAxRYWmZbQJ51TJx69HSLS6Jf9j?usp=sharing).
 
 Instructions for running in Google Colab:
 - Click "Make a Copy" to save an editable copy of the notebook to your drive
@@ -44,6 +49,22 @@ pip install -r requirements.txt
 ## Creating images
 To run at the command line:
 ```
-python3 run.py --init_image_path='images/sample_images/red_monster.png' --prompt='photo of red hairy monster with three eyes, award winning photography, national geographic, nikon'
+python3 run.py --init_image_path='images/sample_images/red_monster.png' --prompt='photo of red hairy monster with three eyes, award winning photography, national geographic, nikon' --seed=838120
 ```
+
+### Image size
+If the input image is too large, you may not have enough memory to run the script.  On my machine, I get this error:
+`UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown`
+In this case, resize the initial image and try again.
+
+### Prompt engineering
+The best results come from adding additional, description terms and phrases to the prompt.
+Suggestions:
+- unreal engine
+- national geographic
+- trending on artstation
+- nikon
+- hyperrealistic
+- award winning photo
+- ((name of artist, e.g. Van Gogh))
 

@@ -24,7 +24,10 @@ def create_pipeline():
     """
     
     # Prompt the user for their HuggingFace token
-    access_token = getpass.getpass(prompt='HuggingFace access token:')
+    if "HUGGINGFACE_ACCESS_TOKEN" in os.environ:
+        access_token = os.environ['HUGGINGFACE_ACCESS_TOKEN']
+    else:
+        access_token = getpass.getpass(prompt='HuggingFace access token:')
     
     # Set up the img2img pipeline from pretrained Stable Diffusion model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
