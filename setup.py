@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='imaginator',
-    version='0.1.0',    
+    version='0.1.0',
     description='Bringing kids\' artwork to life using Stable Diffusion',
     url='https://github.com/brookehamilton/imaginator',
     author='Brooke Hamilton',
@@ -18,14 +18,14 @@ setup(
                     'scipy',
                     'tokenizers',
                     'torch',
-                    'transformers',                 
+                    'transformers',
                       ],
 
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: End Users/Desktop',
-        'License :: OSI Approved :: BSD License',  
-        'Operating System :: POSIX :: Linux',        
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
     ],
 )
