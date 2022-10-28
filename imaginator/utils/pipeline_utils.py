@@ -14,7 +14,6 @@ from diffusers import StableDiffusionImg2ImgPipeline
 import numpy as np
 import getpass
 import datetime
-#from pathlib import Path
 import json
 import os
 
@@ -42,7 +41,7 @@ def create_pipeline():
     pipe = pipe.to(device)
     return pipe
 
-def run_pipeline(
+def create_image(
             init_image_path, 
             prompt, 
             pipe=None,
@@ -134,7 +133,7 @@ def run_image_creation(
     for example: 'creations/2022_10_21__10_19_1666365581/'
     """
     # Create the image
-    results = run_pipeline(pipe=pipe,
+    results = create_image(pipe=pipe,
                 init_image_path=init_image_path, 
                 prompt=prompt, 
                 negative_prompt=negative_prompt,
@@ -163,3 +162,6 @@ def run_image_creation(
     print(f'JSON with run parameters saved to {out_json_path}')
 
     return results
+
+def run_gradio():
+    True
