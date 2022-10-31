@@ -5,7 +5,7 @@ Brooke Hamilton
 brookehamilton@gmail.com
 """
 import click
-from imaginator.pipeline_utils import create_pipeline, run_image_creation
+from imaginator.utils.pipeline_utils import create_pipeline, run_image_creation
 
 @click.command()
 @click.option('--init_image_path', required=True, help='Local path to image file you want to start from (e.g. kid\'s artwork)')
