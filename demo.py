@@ -7,7 +7,7 @@ brookehamilton@gmail.com
 This script generates a user-friendly demo using Gradio
 """
 import gradio as gr
-from imaginator.utils.pipeline_utils import create_pipeline, run_pipeline
+from imaginator.pipeline_utils import create_pipeline, run_pipeline
 import PIL
 
 pipe = create_pipeline()
