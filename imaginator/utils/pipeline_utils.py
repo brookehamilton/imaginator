@@ -16,6 +16,7 @@ import getpass
 import datetime
 import json
 import os
+import PIL
 
 def create_pipeline():
     """
@@ -40,6 +41,28 @@ def create_pipeline():
     )
     pipe = pipe.to(device)
     return pipe
+
+def run_pipeline(pipe,
+                prompt,
+                init_image,
+                strength=0.75,
+                guidance_scale=7.5,
+                negative_prompt=None,
+                num_inference_steps=15,
+                seed=None):
+    """
+    Generate an image using the pipeline
+    """
+    init_image = init_image.resize((768, 512))
+    image = pipe(prompt=prompt,
+                init_image=init_image,
+                strength=strength,
+                guidance_scale=guidance_scale,
+                negative_prompt=negative_prompt,
+                num_inference_steps = num_inference_steps,
+                generator=torch.manual_seed(seed)
+                ).images
+    return image
 
 def create_image(
             init_image_path,
@@ -86,19 +109,18 @@ def create_image(
 
     if seed is None:
         seed = np.random.randint(1, 1000000)
-        print('seed: ', seed)
 
     if not safety_checker:
         pipe.safety_checker = lambda images, clip_input: (images, False)
 
-    images = pipe(prompt=prompt,
+    images = run_pipeline(pipe=pipe,
+                prompt=prompt,
                 init_image=init_image,
                 strength=strength,
                 guidance_scale=guidance_scale,
                 negative_prompt=negative_prompt,
                 num_inference_steps = num_inference_steps,
-                generator=torch.manual_seed(seed)
-                ).images
+                seed=seed)
 
     # Create a dictionary to return the image and all parameters we may want to keep track of
     # Why? Because it is really common to generate an image and then forget what prompt you used,
@@ -162,6 +184,3 @@ def run_image_creation(
     print(f'JSON with run parameters saved to {out_json_path}')
 
     return results
-
-def run_gradio():
-    True
