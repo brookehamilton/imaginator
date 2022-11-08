@@ -1,4 +1,8 @@
 *.DS_Store
 *.ipynb_checkpoints/
 creations/20*
+.vscode*
+*.png
+*.jpg
+*.ipynb
 

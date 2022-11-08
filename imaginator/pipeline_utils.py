@@ -31,6 +31,7 @@ def create_pipeline():
 
     # Set up the img2img pipeline from pretrained Stable Diffusion model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     #device = "cuda"
     model_id_or_path = "CompVis/stable-diffusion-v1-4"
     pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
@@ -40,6 +41,7 @@ def create_pipeline():
         use_auth_token=access_token
     )
     pipe = pipe.to(device)
+    print(f'Created Img2Img Pipeline using: {device}')
     return pipe
 
 def run_pipeline(pipe,
@@ -54,13 +56,15 @@ def run_pipeline(pipe,
     Generate an image using the pipeline
     """
     init_image = init_image.resize((768, 512))
+
+    generator = torch.manual_seed(seed) if not torch.cuda.is_available() else torch.cuda.manual_seed(seed)
     image = pipe(prompt=prompt,
                 init_image=init_image,
                 strength=strength,
                 guidance_scale=guidance_scale,
                 negative_prompt=negative_prompt,
                 num_inference_steps = num_inference_steps,
-                generator=torch.manual_seed(seed)
+                generator=generator
                 ).images
     return image
 
