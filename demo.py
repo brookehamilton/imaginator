@@ -42,6 +42,8 @@ demo = gr.Interface(
             gr.Number(value=15, label='Num Inference Steps', precision=0)   # num_inference_steps
             ],
     outputs=["image"],
+    examples=[['starting_images/sample_images/red_monster.png'], ['starting_images/sample_images/long_neck_monster.png'],
+    ['starting_images/green_spider.jpg']]
     )
 
 demo.launch()
