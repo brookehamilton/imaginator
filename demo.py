@@ -11,14 +11,30 @@ from imaginator.pipeline_utils import create_pipeline, run_pipeline
 import PIL
 
 pipe = create_pipeline()
+pipe.safety_checker = lambda images, clip_input: (images, False)
+
+preset_dict = {
+    'None': '',
+   'Stuffed Animal': ', photo of cute hairy stuffed animal, award winning photography, national geographic, nikon',
+   'Plastic Toy': ', photo of cute plastic toy, product image, high resolution',
+   'Photorealistic Human': ''', hyperrealistic photo,
+        realistic proportions, highly detailed, smooth, sharp focus, 8k, ray tracing,
+        digital painting, concept art illustration, by artgerm, trending on artstation, nikon d850''',
+   'Cute Japanese Style': ', kawaii Japenese cartoon style, cute, anime, sanrio, pokemon, studio ghibli, character art'
+}
 
 def run_gradio(starting_image: PIL.Image.Image,
                 prompt: str,
+                preset: str,
                 strength: float,
                 guidance_scale: float,
                 num_inference_steps: int,
                 seed: int,):
 
+    preset_text = preset_dict[preset]
+    print(f'Using preset_text: {preset_text}')
+    prompt += preset_text
+    print(f'Using prompt: {prompt}')
     images = run_pipeline(pipe,
                 prompt=prompt,
                 init_image=starting_image,
@@ -34,7 +50,7 @@ demo = gr.Interface(
     fn=run_gradio,
     inputs=[gr.Image(type="pil"),                                           # starting_image
             "text",                                                         # prompt
-
+            gr.inputs.Dropdown(choices=list(preset_dict.keys()), default='None', label='Preset Style (Optional)'),   # preset
             gr.inputs.Slider(0.0, 1.0, step=0.05, default=0.75,             # strength
                 label='Strength (how much to transform the starting image; higher values less faithful to starting image'),
             gr.inputs.Slider(6, 9, step=0.25, default=7.5,                  # guidance scale
