@@ -14,10 +14,10 @@ pipe = create_pipeline()
 
 def run_gradio(starting_image: PIL.Image.Image,
                 prompt: str,
-                seed: int,
                 strength: float,
                 guidance_scale: float,
-                num_inference_steps: int):
+                num_inference_steps: int,
+                seed: int,):
 
     images = run_pipeline(pipe,
                 prompt=prompt,
@@ -34,12 +34,13 @@ demo = gr.Interface(
     fn=run_gradio,
     inputs=[gr.Image(type="pil"),                                           # starting_image
             "text",                                                         # prompt
-            gr.Number(value=455),                                           # seed
+
             gr.inputs.Slider(0.0, 1.0, step=0.05, default=0.75,             # strength
                 label='Strength (how much to transform the starting image; higher values less faithful to starting image'),
             gr.inputs.Slider(6, 9, step=0.25, default=7.5,                  # guidance scale
                 label='Guidance Scale (how much to match text prompt; higher values match text more)'),
-            gr.Number(value=15, label='Num Inference Steps', precision=0)   # num_inference_steps
+            gr.Number(value=15, label='Num Inference Steps', precision=0),  # num_inference_steps
+            gr.Number(value=102)                                              # seed
             ],
     outputs=["image"],
     examples=[['starting_images/sample_images/red_monster.png', 'photo of red hairy monster with three eyes, award winning photography, national geographic, nikon'],
