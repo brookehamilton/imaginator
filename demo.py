@@ -42,8 +42,8 @@ demo = gr.Interface(
             gr.Number(value=15, label='Num Inference Steps', precision=0)   # num_inference_steps
             ],
     outputs=["image"],
-    examples=[['starting_images/sample_images/red_monster.png'], ['starting_images/sample_images/long_neck_monster.png'],
-    ['starting_images/green_spider.jpg']]
+    examples=[['starting_images/sample_images/red_monster.png', 'photo of red hairy monster with three eyes, award winning photography, national geographic, nikon'],
+    ['starting_images/sample_images/long_neck_monster.png', 'charcoal drawing of a monster with long neck and outstretched arms, trending on artstation']]
     )
 
 demo.launch()
