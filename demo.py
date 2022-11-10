@@ -7,7 +7,7 @@ brookehamilton@gmail.com
 This script generates a user-friendly demo using Gradio
 """
 import gradio as gr
-from imaginator.pipeline_utils import create_pipeline, run_pipeline
+from imaginator.pipeline_utils import create_pipeline, run_pipeline, resize_image
 import PIL
 
 pipe = create_pipeline()
@@ -31,6 +31,7 @@ def run_gradio(starting_image: PIL.Image.Image,
                 num_inference_steps: int,
                 seed: int,):
 
+    starting_image = resize_image(starting_image)
     preset_text = preset_dict[preset]
     print(f'Using preset_text: {preset_text}')
     prompt += preset_text
@@ -45,6 +46,8 @@ def run_gradio(starting_image: PIL.Image.Image,
                 seed=seed)
 
     return images[0]
+
+
 
 demo = gr.Interface(
     fn=run_gradio,
