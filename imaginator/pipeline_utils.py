@@ -18,6 +18,39 @@ import json
 import os
 import PIL
 
+def resize_image(init_image, desired_max_dimension=350):
+    """
+    Proportionally resize an image based on the desired max dimension (length or width). This will preserve the aspect ratio
+    desired_max_dimension: size in pixels of longest desired dimension. For example, if set to 500, this will resize the image
+    such that whichever side is longer is resized to 500, and the other side is scaled accordingly to maintain
+    aspect ratio
+    """
+    print('init image width: ', init_image.width)
+    print('init image height: ', init_image.height)
+    longest_dim = 'width' if init_image.width >= init_image.height  else 'height'
+    print('longest_dim: ', longest_dim)
+
+    if longest_dim == 'width':
+        ratio_of_resize = desired_max_dimension/init_image.width
+        print('ratio_of_resize: ', ratio_of_resize)
+        desired_height = int(ratio_of_resize * init_image.height)
+        print('initial height: ', init_image.height)
+        print('desired height: ', desired_height)
+        resized_image = init_image.resize((desired_max_dimension, desired_height))
+    else:
+        ratio_of_resize = desired_max_dimension/init_image.height
+        print('ratio_of_resize: ', ratio_of_resize)
+        desired_width = int(ratio_of_resize * init_image.width)
+        print('initial width: ', init_image.width)
+        print('desired width: ', desired_width)
+        resized_image = init_image.resize((desired_width, desired_max_dimension))
+
+    print('resized_image.width:', resized_image.width)
+    print('resized_image.height: ', resized_image.height)
+    return resized_image
+
+
+
 def create_pipeline():
     """
     Create an img2img pipeline from pretrained Stable Diffusion model
@@ -55,7 +88,7 @@ def run_pipeline(pipe,
     """
     Generate an image using the pipeline
     """
-    init_image = init_image.resize((768, 512))
+    #init_image = init_image.resize((768, 512))
 
     generator = torch.manual_seed(seed) if not torch.cuda.is_available() else torch.cuda.manual_seed(seed)
     image = pipe(prompt=prompt,
@@ -77,7 +110,8 @@ def create_image(
             seed=None,
             strength=0.75,
             guidance_scale=7.5,
-            safety_checker=False):
+            safety_checker=False,
+            resize=True):
     """
     Create a single image, given a prompt and a starting image
 
@@ -109,7 +143,10 @@ def create_image(
         pipe = create_pipeline()
 
     init_image = Image.open(init_image_path).convert("RGB")
-    init_image = init_image.resize((768, 512))
+
+    if resize:
+        print('RESIZING IMAGE')
+        init_image = resize_image(init_image)
 
     if seed is None:
         seed = np.random.randint(1, 1000000)
