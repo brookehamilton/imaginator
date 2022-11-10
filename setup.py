@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='imaginator',
-    version='0.1.1.3',
+    version='0.1.1.6',
     description='Bringing kids\' artwork to life using Stable Diffusion',
     url='https://github.com/brookehamilton/imaginator',
     author='Brooke Hamilton',
