@@ -9,9 +9,12 @@ This script generates a user-friendly demo using Gradio
 import gradio as gr
 from imaginator.pipeline_utils import create_pipeline, run_pipeline, resize_image
 import PIL
+from imaginator.configs import InferenceConfig
+from imaginator.image_run import ImageRun
 
+# Create the pipeline
 pipe = create_pipeline()
-pipe.safety_checker = lambda images, clip_input: (images, False)
+#pipe.safety_checker = lambda images, clip_input: (images, False)
 
 preset_dict = {
     'None': '',
@@ -29,24 +32,24 @@ def run_gradio(starting_image: PIL.Image.Image,
                 strength: float,
                 guidance_scale: float,
                 num_inference_steps: int,
-                seed: int,):
+                seed: int,
+                safety_checker: bool):
+    # Set up inference config
+    config_dict = {'prompt': prompt,
+            'strength': strength,
+            'guidance_scale': guidance_scale,
+            'negative_prompt': None,
+            'num_inference_steps': num_inference_steps,
+            'seed': seed
+            }
+    inference_config = InferenceConfig(**config_dict)
 
-    starting_image = resize_image(starting_image)
-    preset_text = preset_dict[preset]
-    print(f'Using preset_text: {preset_text}')
-    prompt += preset_text
-    print(f'Using prompt: {prompt}')
-    images = run_pipeline(pipe,
-                prompt=prompt,
-                init_image=starting_image,
-                strength=strength,
-                guidance_scale=guidance_scale,
-                negative_prompt=None,
-                num_inference_steps=num_inference_steps,
-                seed=seed)
+    # Run image creation
+    Run = ImageRun(run_config = inference_config, pipeline=pipe, resize_pixels=500, safety_checker=safety_checker)
+    Run.load_init_image_from_PIL(starting_image)
+    Run.create_image()
 
-    return images[0]
-
+    return Run.image
 
 
 demo = gr.Interface(
@@ -56,11 +59,11 @@ demo = gr.Interface(
             gr.inputs.Dropdown(choices=list(preset_dict.keys()), default='None', label='Preset Style (Optional)'),   # preset
             gr.inputs.Slider(0.0, 1.0, step=0.05, default=0.75,             # strength
                 label='Strength (how much to transform the starting image; higher values less faithful to starting image'),
-            gr.inputs.Slider(6, 9, step=0.25, default=7.5,                  # guidance scale
+            gr.inputs.Slider(6, 20, step=0.5, default=7.5,                  # guidance scale
                 label='Guidance Scale (how much to match text prompt; higher values match text more)'),
             gr.Number(value=15, label='Num Inference Steps', precision=0),  # num_inference_steps
-            gr.Number(value=102)                                              # seed
-            ],
+            gr.Number(value=102),                                              # seed
+            gr.Checkbox(value=True, label='NSFW Safety Checker')],
     outputs=["image"],
     examples=[['starting_images/sample_images/red_monster.png', 'photo of red hairy monster with three eyes, award winning photography, national geographic, nikon'],
     ['starting_images/sample_images/long_neck_monster.png', 'charcoal drawing of a monster with long neck and outstretched arms, trending on artstation']]
