@@ -42,6 +42,9 @@ class ImageRun():
         if self.init_image_path is not None:
             self.load_init_image(init_image_path=self.init_image_path)
 
+        # Created image
+        self.image = None
+
     def load_init_image(self, init_image_path: str):
         """
         Load the initial image from path
@@ -82,12 +85,12 @@ class ImageRun():
                     ).images
         self.image = images[0]
 
-    def save_image(self, image_out_path):
+    def save_image(self, image_out_path: str):
         """Save the image to disk"""
         self.image.save(image_out_path)
         print(f'Image saved to {image_out_path}')
 
-    def save_run_parameters(self, out_json_path='run_parameters.json'):
+    def save_run_parameters(self, out_path='run_parameters.json'):
         """Save the parameters used for this run as a JSON file"""
 
         run_parameters = {}
@@ -99,6 +102,6 @@ class ImageRun():
         run_parameters['guidance_scale'] = self.run_config.guidance_scale
         run_parameters['num_inference_steps'] = self.run_config.num_inference_steps
 
-        with open(out_json_path, 'w') as f:
+        with open(out_path, 'w') as f:
             json.dump(run_parameters, f)
-        print(f'JSON with run parameters saved to {out_json_path}')
+        print(f'JSON with run parameters saved to {out_path}')
