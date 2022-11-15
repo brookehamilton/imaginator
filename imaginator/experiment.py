@@ -4,10 +4,9 @@ Experiment Runner
 Brooke Hamilton
 brookehamilton@gmail.com
 
-This script contains an Experiment class that helps the user iterate on a specific piece of art more effectively.
+This script contains a SeedExperiment class that helps the user iterate on a specific piece of art more effectively.
 """
 from PIL import Image
-import numpy as np
 import copy
 from diffusers import StableDiffusionImg2ImgPipeline
 from imaginator.pipeline_utils import create_pipeline
@@ -37,14 +36,10 @@ class SeedExperiment():
         self.pipeline = pipeline
         if self.pipeline is None:
             self.pipeline = create_pipeline()
-        #if not safety_checker:
-            #self.turn_off_safety_checker()
 
         # Initial image
         self.resize_pixels = resize_pixels
         self.init_image_path = init_image_path
-        #if self.init_image_path is not None:
-            #self.load_init_image(init_image_path=self.init_image_path)
 
         # Experimental runs
         self.runs = None
@@ -64,7 +59,12 @@ class SeedExperiment():
             safety_checker=self.safety_checker)
             self.runs.append(run)
 
-    def downsize_run_images(self, downsize_pixels=100):
+    def downsize_run_images(self, downsize_pixels=500):
+        """
+        For each experimental run, downsize the initial image to make the run go faster.
+
+        N.B. It is not recommended to reduce the size smaller than ~500px
+        """
         for i in self.runs:
             i.init_image = resize_image(i.init_image, desired_max_dimension=downsize_pixels)
 
@@ -72,7 +72,6 @@ class SeedExperiment():
         """
         Kick off image creation in each of the experimental runs
         """
-
         if self.runs is None:
             self.initialize_runs()
 
@@ -89,9 +88,11 @@ class SeedExperiment():
         return image_grid(images, 3, 3)
 
     def scale_up_run(self, run_index: int, num_inference_steps: int = 50):
+        """
+        For a given experimental run, re-run the image creation with a larger
+        number of inference steps to create the final image
+        """
 
         run = self.runs[run_index]
-
-        # Increase num_inference_steps
         run.run_config.num_inference_steps = num_inference_steps
         run.create_image()
