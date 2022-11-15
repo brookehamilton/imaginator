@@ -10,20 +10,10 @@ from PIL import Image
 import numpy as np
 import copy
 from diffusers import StableDiffusionImg2ImgPipeline
-from imaginator.pipeline_utils import create_pipeline, resize_image
+from imaginator.pipeline_utils import create_pipeline
 from imaginator.configs import InferenceConfig
 from imaginator.image_run import ImageRun
-
-def image_grid(imgs, rows, cols):
-    assert len(imgs) == rows*cols
-
-    w, h = imgs[0].size
-    grid = Image.new('RGB', size=(cols*w, rows*h))
-    grid_w, grid_h = grid.size
-
-    for i, img in enumerate(imgs):
-        grid.paste(img, box=(i%cols*w, i//cols*h))
-    return grid
+from imaginator.image_utils import resize_image, image_grid
 
 class SeedExperiment():
 
@@ -59,14 +49,14 @@ class SeedExperiment():
         # Experimental runs
         self.runs = None
 
-    def initialize_runs(self):
+    def initialize_runs(self, num_inference_steps=10):
 
         # Initialize a list containing ImageRun objects
         self.runs = []
 
         for i in range(self.num_runs):
             this_run_config = copy.deepcopy(self.run_config)
-            this_run_config.num_inference_steps = 10
+            this_run_config.num_inference_steps = num_inference_steps
             run = ImageRun(run_config = this_run_config,
             pipeline=self.pipeline,
             resize_pixels=self.resize_pixels,
@@ -79,6 +69,13 @@ class SeedExperiment():
             i.init_image = resize_image(i.init_image, desired_max_dimension=downsize_pixels)
 
     def run_all(self):
+        """
+        Kick off image creation in each of the experimental runs
+        """
+
+        if self.runs is None:
+            self.initialize_runs()
+
         for i in self.runs:
             i.create_image()
 

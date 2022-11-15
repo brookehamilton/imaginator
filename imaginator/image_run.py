@@ -8,7 +8,8 @@ The ImageRun class takes in an inference config and a starting image and produce
 """
 from . import configs
 from diffusers import StableDiffusionImg2ImgPipeline
-from .pipeline_utils import create_pipeline, resize_image
+from imaginator.pipeline_utils import create_pipeline
+from imaginator.image_utils import resize_image
 import torch
 import PIL
 from PIL import Image
