@@ -17,27 +17,7 @@ import datetime
 import json
 import os
 import PIL
-
-def resize_image(init_image, desired_max_dimension=750):
-    """
-    Proportionally resize an image based on the desired max dimension (length or width). This will preserve the aspect ratio
-    desired_max_dimension: size in pixels of longest desired dimension. For example, if set to 500, this will resize the image
-    such that whichever side is longer is resized to 500, and the other side is scaled accordingly to maintain
-    aspect ratio
-    """
-    longest_dim = 'width' if init_image.width >= init_image.height  else 'height'
-
-    if longest_dim == 'width':
-        ratio_of_resize = desired_max_dimension/init_image.width
-        desired_height = int(ratio_of_resize * init_image.height)
-        resized_image = init_image.resize((desired_max_dimension, desired_height))
-    else:
-        ratio_of_resize = desired_max_dimension/init_image.height
-        desired_width = int(ratio_of_resize * init_image.width)
-        resized_image = init_image.resize((desired_width, desired_max_dimension))
-
-    return resized_image
-
+from imaginator.image_utils import resize_image
 
 
 def create_pipeline():

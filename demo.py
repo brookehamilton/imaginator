@@ -7,8 +7,10 @@ brookehamilton@gmail.com
 This script generates a user-friendly demo using Gradio
 """
 import gradio as gr
-from imaginator.pipeline_utils import create_pipeline, run_pipeline, resize_image
+from imaginator.pipeline_utils import create_pipeline
+from imaginator.image_utils import resize_image
 import PIL
+from PIL.Image import Image
 from imaginator.configs import InferenceConfig
 from imaginator.image_run import ImageRun
 
