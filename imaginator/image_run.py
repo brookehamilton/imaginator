@@ -37,6 +37,7 @@ class ImageRun():
             self.turn_off_safety_checker()
 
         # Initial image
+        self.init_image = None
         self.resize_pixels = resize_pixels
         self.init_image_path = init_image_path
         if self.init_image_path is not None:
@@ -53,7 +54,11 @@ class ImageRun():
         init_image = Image.open(self.init_image_path).convert("RGB")
         if self.resize_pixels is not None:
             init_image = resize_image(init_image, desired_max_dimension=self.resize_pixels)
-            print(f'Resized init image to {self.resize_pixels} pixels on longest side')
+            #(f'Resized init image to {self.resize_pixels} pixels on longest side')
+        self.init_image = init_image
+
+    def load_init_image_from_PIL(self, init_image: PIL.Image):
+        """Load an initial image that is already a PIL Image object, for example from a Gradio input"""
         self.init_image = init_image
 
     def turn_off_safety_checker(self):
@@ -62,10 +67,6 @@ class ImageRun():
         rate of false positives.
         """
         self.pipeline.safety_checker = lambda images, clip_input: (images, False)
-
-    def load_init_image_from_PIL(self, init_image: PIL.Image):
-        """Load an initial image that is already a PIL Image object, for example from a Gradio input"""
-        self.init_image = init_image
 
     def create_image(self):
         """

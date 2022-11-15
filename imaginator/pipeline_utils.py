@@ -36,6 +36,9 @@ def resize_image(init_image, desired_max_dimension=750):
         desired_width = int(ratio_of_resize * init_image.width)
         resized_image = init_image.resize((desired_width, desired_max_dimension))
 
+    (f'Inside resize_image(). Resized init image to {desired_max_dimension} pixels on longest side')
+    (f'Inside resize_image(). Actual resized image final dimensions are w: {resized_image.width}, h: {resized_image.height}')
+
     return resized_image
 
 
@@ -213,3 +216,14 @@ def run_image_creation(
     print(f'JSON with run parameters saved to {out_json_path}')
 
     return results
+
+def image_grid(imgs, rows, cols):
+    assert len(imgs) == rows*cols
+
+    w, h = imgs[0].size
+    grid = Image.new('RGB', size=(cols*w, rows*h))
+    grid_w, grid_h = grid.size
+
+    for i, img in enumerate(imgs):
+        grid.paste(img, box=(i%cols*w, i//cols*h))
+    return grid
