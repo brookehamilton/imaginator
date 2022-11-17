@@ -68,12 +68,12 @@ class SeedExperiment():
         for i in self.runs:
             i.init_image = resize_image(i.init_image, desired_max_dimension=downsize_pixels)
 
-    def run_all(self):
+    def run_all(self, num_inference_steps=10):
         """
         Kick off image creation in each of the experimental runs
         """
         if self.runs is None:
-            self.initialize_runs()
+            self.initialize_runs(num_inference_steps=num_inference_steps)
 
         for i in self.runs:
             i.create_image()
