@@ -44,6 +44,9 @@ class SeedExperiment():
         # Experimental runs
         self.runs = None
 
+        # Final image created by scaling up the chosen best candidate
+        self.final_image = None
+
     def initialize_runs(self, num_inference_steps=10):
 
         # Initialize a list containing ImageRun objects
@@ -68,15 +71,18 @@ class SeedExperiment():
         for i in self.runs:
             i.init_image = resize_image(i.init_image, desired_max_dimension=downsize_pixels)
 
-    def run_all(self):
+    def run_all(self, num_inference_steps=10):
         """
         Kick off image creation in each of the experimental runs
         """
         if self.runs is None:
-            self.initialize_runs()
+            self.initialize_runs(num_inference_steps=num_inference_steps)
 
         for i in self.runs:
             i.create_image()
+
+        if self.num_runs == 9:
+            return self.show_images()
 
     def show_images(self):
         """
@@ -96,3 +102,6 @@ class SeedExperiment():
         run = self.runs[run_index]
         run.run_config.num_inference_steps = num_inference_steps
         run.create_image()
+
+        self.final_image = run.image
+        return self.final_image
