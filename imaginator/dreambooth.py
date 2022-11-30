@@ -642,14 +642,14 @@ class DreamBoothRunner():
 
                     # Get the target for loss depending on the prediction type
                     #print('Getting the target for loss depending on the prediction type')
-                    if self.noise_scheduler.predict_epsilon:
-                    #if self.noise_scheduler.config.prediction_type == "epsilon":
+                    #if self.noise_scheduler.predict_epsilon:
+                    if self.noise_scheduler.config.prediction_type == "epsilon":
                         target = noise
-                    #elif self.noise_scheduler.config.prediction_type == "v_prediction":
-                    else:
-                        target = self.noise_scheduler.get_velocity(latents, noise, timesteps)
+                    elif self.noise_scheduler.config.prediction_type == "v_prediction":
                     #else:
-                        #raise ValueError(f"Unknown prediction type {self.noise_scheduler.config.prediction_type}")
+                        target = self.noise_scheduler.get_velocity(latents, noise, timesteps)
+                    else:
+                        raise ValueError(f"Unknown prediction type {self.noise_scheduler.config.prediction_type}")
 
                     if self.config.do_prior_preservation:
                         # Chunk the noise and model_pred into two parts and compute the loss on each part separately.
