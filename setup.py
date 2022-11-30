@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='imaginator',
-    version='0.1.1.8',
+    version='0.1.1.9',
     description='Bringing kids\' artwork to life using Stable Diffusion',
     url='https://github.com/brookehamilton/imaginator',
     author='Brooke Hamilton',
@@ -11,9 +11,9 @@ setup(
     packages=['imaginator'],
     install_requires=[
                     'click',
-                    'diffusers==0.6.0',
+                    'diffusers>=0.6.0',
                     'gradio',
-                    'huggingface-hub==0.10.1',
+                    'huggingface-hub>=0.10.1',
                     'numpy',
                     'Pillow',
                     'scipy',
