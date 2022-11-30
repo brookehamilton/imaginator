@@ -6,4 +6,10 @@ creations/20*
 *.jpg
 *.jpeg
 *.ipynb
+starting_images/*
+build/
+dist/
+imaginator.egg-info/
+imaginator/__pycache__/
+logs
 
