@@ -54,7 +54,6 @@ class DreamBoothConfig():
 
     # prior preservation -- additional images of the generic class
     do_prior_preservation: bool
-    generate_class_images: bool     # whether to generate fresh class images w/ model (otherwise will assume images are already in directory specified)
     class_prompt: str               # e.g. 'a photograph of a Victorian Christmas card painting'
     class_data_dir: str
     num_class_images: int
@@ -686,7 +685,7 @@ class DreamBoothRunner():
 
                 # Checks if the accelerator has performed an optimization step behind the scenes
                 if self.accelerator.sync_gradients:
-                    print('Updating progress bar')
+                    #print('Updating progress bar')
                     progress_bar.update(1)
                     global_step += 1
 
@@ -700,6 +699,7 @@ class DreamBoothRunner():
                                 use_auth_token=self.auth_token
                             )
                             save_path = os.path.join(self.config.model_out_dir, f"checkpoint-{global_step}")
+                            print(f'Saving checkpoint at {save_path}')
                             pipeline.save_pretrained(save_path)
 
                 logs = {"loss": loss.detach().item(), "lr": self.lr_scheduler.get_last_lr()[0]}
