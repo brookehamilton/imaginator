@@ -107,7 +107,7 @@ class DreamBoothDataset(Dataset):
         if not self.instance_data_dir.exists():
             raise ValueError("Instance images directory doesn't exist.")
 
-        self.instance_images_path = list(Path(instance_data_dir).iterdir())
+        self.instance_images_path = [x for x in Path(self.instance_data_dir).iterdir() if not x.is_dir() and x.suffix in (['.png', '.jpg', '.jpeg'])]
         self.num_instance_images = len(self.instance_images_path)
         self.instance_prompt = instance_prompt
         self._length = self.num_instance_images
@@ -116,7 +116,7 @@ class DreamBoothDataset(Dataset):
             print('class_data_dir is not None')
             self.class_data_dir = Path(class_data_dir)
             self.class_data_dir.mkdir(parents=True, exist_ok=True)
-            self.class_images_path = list(self.class_data_dir.iterdir())
+            self.class_images_path = [x for x in Path(self.class_data_dir).iterdir() if not x.is_dir() and x.suffix in (['.png', '.jpg', '.jpeg'])]
             self.num_class_images = len(self.class_images_path)
             self._length = max(self.num_class_images, self.num_instance_images)
             self.class_prompt = class_prompt
@@ -308,6 +308,10 @@ class DreamBoothRunner():
         print('Initialized DreamBooth model training job')
         print('='*50)
         self.config = DreamBoothConfig
+
+        # Print some basic info about what we're doing as a sanity check
+        print(f'Training DreamBooth ')
+
         if self.config.seed is not None:
             print(f'Setting seed to {self.config.seed}')
             set_seed(self.config.seed)
@@ -321,6 +325,8 @@ class DreamBoothRunner():
             self.auth_token = os.environ['HUGGINGFACE_ACCESS_TOKEN']
         else:
             self.auth_token = getpass.getpass(prompt='HuggingFace access token:')
+
+
 
         print('Starting Accelerator')
         self.accelerator = Accelerator(gradient_accumulation_steps=1,
