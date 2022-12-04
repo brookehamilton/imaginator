@@ -34,6 +34,11 @@ from dataclasses import dataclass
 import getpass
 import datetime
 
+from huggingface_hub import HfFolder, Repository, whoami
+from typing import Optional
+from pathlib import Path
+from huggingface_hub import create_repo
+
 
 
 @dataclass
@@ -43,6 +48,8 @@ class DreamBoothConfig():
     """
     # saved model
     model_out_dir: str      # directory to save the model in
+    push_to_hub: bool       # whether to push the saved model to the Huggingface Hub
+    private_repo: bool      # whether to make the model repo private
 
     # the pretrained model we want to use
     model_id: str               # e.g. 'runwayml/stable-diffusion-v1-5
@@ -326,6 +333,28 @@ class DreamBoothRunner():
         else:
             self.auth_token = getpass.getpass(prompt='HuggingFace access token:')
 
+        # Create a huggingface repo
+        if self.config.push_to_hub:
+            def get_full_repo_name(model_id: str, organization: Optional[str] = None, token: Optional[str] = None):
+                if token is None:
+                    token = HfFolder.get_token()
+                if organization is None:
+                    username = whoami(token)["name"]
+                    return f"{username}/{model_id}"
+                else:
+                    return f"{organization}/{model_id}"
+
+            # Handle the repository creation
+            repo_name = get_full_repo_name(Path(self.config.model_out_dir).name, token=self.auth_token)
+            print(f'Creating repo: {repo_name}')
+
+            create_repo(repo_name, token=self.auth_token, exist_ok=True)
+            self.repo = Repository(self.config.model_out_dir, clone_from=repo_name, token=self.auth_token, private=self.config.private_repo)
+            with open(os.path.join(self.config.model_out_dir, ".gitignore"), "w+") as gitignore:
+                if "step_*" not in gitignore:
+                    gitignore.write("step_*\n")
+                if "epoch_*" not in gitignore:
+                    gitignore.write("epoch_*\n")
 
 
         print('Starting Accelerator')
@@ -729,8 +758,8 @@ class DreamBoothRunner():
             print(f'Saving model to {self.config.model_out_dir}')
             pipeline.save_pretrained(self.config.model_out_dir)
 
-            #if self.config.push_to_hub:
-                #repo.push_to_hub(commit_message="End of training", blocking=False, auto_lfs_prune=True)
+            if self.config.push_to_hub:
+                self.repo.push_to_hub(commit_message="End of training", blocking=False, auto_lfs_prune=True)
 
         self.accelerator.end_training()
         print('Training done')
