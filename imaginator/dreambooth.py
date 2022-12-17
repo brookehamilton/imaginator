@@ -41,6 +41,15 @@ from huggingface_hub import create_repo
 
 
 
+def get_full_repo_name(model_id: str, organization: Optional[str] = None, token: Optional[str] = None):
+    if token is None:
+        token = HfFolder.get_token()
+    if organization is None:
+        username = whoami(token)["name"]
+        return f"{username}/{model_id}"
+    else:
+        return f"{organization}/{model_id}"
+
 @dataclass
 class DreamBoothConfig():
     """
@@ -48,6 +57,7 @@ class DreamBoothConfig():
     """
     # saved model
     model_out_dir: str      # directory to save the model in
+    hub_model_id: str       # huggingface repo to keep in sync with local model_out_dir
     push_to_hub: bool       # whether to push the saved model to the Huggingface Hub
     private_repo: bool      # whether to make the model repo private
 
@@ -156,8 +166,6 @@ class DreamBoothDataset(Dataset):
         ).input_ids
 
         if self.class_data_dir:
-            print('triggered at if self.class_data_dir')
-            print('self.num_class_images: ', self.num_class_images)
             class_image = Image.open(self.class_images_path[index % self.num_class_images])
             if not class_image.mode == "RGB":
                 class_image = class_image.convert("RGB")
@@ -316,9 +324,6 @@ class DreamBoothRunner():
         print('='*50)
         self.config = DreamBoothConfig
 
-        # Print some basic info about what we're doing as a sanity check
-        print(f'Training DreamBooth ')
-
         if self.config.seed is not None:
             print(f'Setting seed to {self.config.seed}')
             set_seed(self.config.seed)
@@ -333,35 +338,36 @@ class DreamBoothRunner():
         else:
             self.auth_token = getpass.getpass(prompt='HuggingFace access token:')
 
-        # Create a huggingface repo
-        if self.config.push_to_hub:
-            def get_full_repo_name(model_id: str, organization: Optional[str] = None, token: Optional[str] = None):
-                if token is None:
-                    token = HfFolder.get_token()
-                if organization is None:
-                    username = whoami(token)["name"]
-                    return f"{username}/{model_id}"
-                else:
-                    return f"{organization}/{model_id}"
-
-            # Handle the repository creation
-            repo_name = get_full_repo_name(Path(self.config.model_out_dir).name, token=self.auth_token)
-            print(f'Creating repo: {repo_name}')
-
-            create_repo(repo_name, token=self.auth_token, exist_ok=True)
-            self.repo = Repository(self.config.model_out_dir, clone_from=repo_name, token=self.auth_token, private=self.config.private_repo)
-            with open(os.path.join(self.config.model_out_dir, ".gitignore"), "w+") as gitignore:
-                if "step_*" not in gitignore:
-                    gitignore.write("step_*\n")
-                if "epoch_*" not in gitignore:
-                    gitignore.write("epoch_*\n")
-
 
         print('Starting Accelerator')
         self.accelerator = Accelerator(gradient_accumulation_steps=1,
             mixed_precision="fp16" if torch.cuda.is_available() else "no", #["no", "fp16", "bf16"]
             log_with="tensorboard",
             logging_dir='logs')
+
+
+        # Handle the huggingface repository creation
+        if self.accelerator.is_main_process:
+            if self.config.push_to_hub:
+                if self.config.hub_model_id is None:
+                    repo_name = get_full_repo_name(Path(self.config.model_out_dir).name, token=self.auth_token)
+                else:
+                    repo_name = self.config.hub_model_id
+
+                print('Repo name will be: ', repo_name)
+                self.repo = Repository(self.config.model_out_dir, clone_from=repo_name, use_auth_token=self.auth_token)
+                print('Created repo at Run.repo')
+
+                with open(os.path.join(self.config.model_out_dir, ".gitignore"), "w+") as gitignore:
+                    if "step_*" not in gitignore:
+                        gitignore.write("step_*\n")
+                    if "epoch_*" not in gitignore:
+                        gitignore.write("epoch_*\n")
+            elif self.config.model_out_dir is not None:
+                os.makedirs(self.config.model_out_dir, exist_ok=True)
+
+
+
 
         self.tokenizer = CLIPTokenizer.from_pretrained(
             self.config.model_id,
@@ -412,7 +418,7 @@ class DreamBoothRunner():
         # Use 8-bit Adam for lower memory usage or to fine-tune the model in 16GB GPUs
         print('Setting optimizer class')
         if self.config.use_8bit_adam:
-            print('hit condition use 8bit adam')
+            print('Using 8bit adam')
             try:
                 import bitsandbytes as bnb
             except ImportError:
@@ -422,7 +428,7 @@ class DreamBoothRunner():
 
             self.optimizer_class = bnb.optim.AdamW8bit
         else:
-            print('not using 8bit adam')
+            print('Not using 8bit adam')
             self.optimizer_class = torch.optim.AdamW
 
         print('Getting optimizer')
@@ -438,7 +444,6 @@ class DreamBoothRunner():
             eps=self.config.adam_epsilon,
         )
 
-        print('within __init__(), triggering self.generate_class_images() prior to making the dataloader')
         if self.config.do_prior_preservation:
             self.generate_class_images()
 
@@ -498,15 +503,10 @@ class DreamBoothRunner():
         print('Determining number of training steps')
         # Scheduler and math around the number of training steps.
         overrode_max_train_steps = False
-        print('len(self.train_dataloader):', len(self.train_dataloader))
-        print('self.config.gradient_accumulation_steps:', self.config.gradient_accumulation_steps)
         num_update_steps_per_epoch = math.ceil(len(self.train_dataloader) / self.config.gradient_accumulation_steps)
-        print('num_update_steps_per_epoch:', num_update_steps_per_epoch)
         if self.config.max_train_steps is None:
             self.config.max_train_steps = self.config.num_train_epochs * num_update_steps_per_epoch
             overrode_max_train_steps = True
-        print('max_train_steps:', self.config.max_train_steps)
-        print('overrode_max_train_steps:', overrode_max_train_steps)
 
         print('Getting lr_scheduler')
         self.lr_scheduler = get_scheduler(
@@ -759,7 +759,9 @@ class DreamBoothRunner():
             pipeline.save_pretrained(self.config.model_out_dir)
 
             if self.config.push_to_hub:
-                self.repo.push_to_hub(commit_message="End of training", blocking=False, auto_lfs_prune=True)
+                print('Pushing to hub...')
+                self.repo.push_to_hub(commit_message="End of training", blocking=False, auto_lfs_prune=True, clean_ok=False)
+                print('Pushed to hub')
 
         self.accelerator.end_training()
         print('Training done')
